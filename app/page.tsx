@@ -1,95 +1,136 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
 
-export default function Home() {
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import Image from 'next/image'
+import * as Tone from 'tone'
+import Voice, { scales, ScaleName, minPitch, maxPitch, MAX_DETUNE } from '@/components/Voice'
+import LinearKnob from '@/components/LinearKnob'
+import { midiNoteNumberToNoteName } from '@/util/midi'
+import { constrain } from '@/util/math'
+import getNativeContext from '@/util/getNativeContext'
+import { secondaryColor } from './globals'
+import styles from './page.module.css'
+
+const scaleOptions = Object.keys(scales)
+const musicNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+export default function LAMBVoice() {
+  const [initialized, setInitialized] = useState<boolean>(false)
+  const [playing, setPlaying] = useState<boolean>(false)
+  const [pitch1, setPitch1] = useState<number>(49)
+  const voice1Ref = useRef<Tone.OmniOscillator<Tone.Oscillator> | null>(null)
+
+  const [wave, setWave] = useState<number>(0)
+  const updateWave = useCallback((value: number) => {
+    setWave(value)
+    voice1Ref.current?.set({ spread: value })
+  }, [])
+
+  const [transpose, setTranspose] = useState<number>(0)
+  const [scale, setScale] = useState<number>(0)
+
+  const pitch1NoteName = useMemo(
+    () => midiNoteNumberToNoteName(constrain(pitch1 + transpose, minPitch, maxPitch)),
+    [pitch1, transpose]
+  )
+
+  useEffect(() => {
+    if (voice1Ref.current) voice1Ref.current.frequency.value = pitch1NoteName
+  }, [pitch1NoteName])
+
+  // init audio
+  useEffect(() => {
+    if (!initialized) return
+
+    voice1Ref.current = new Tone.OmniOscillator({
+      volume: -8,
+      frequency: pitch1NoteName,
+      type: 'fatsawtooth',
+      spread: 0,
+    })
+      .toDestination()
+      .start()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized])
+
+  const playStop = useCallback(async () => {
+    if (!initialized) {
+      await Tone.start()
+      setInitialized(true)
+    }
+
+    setPlaying((playing) => {
+      const ctx = getNativeContext()
+      if (!playing) {
+        ctx.resume()
+      } else {
+        ctx.suspend()
+      }
+
+      return !playing
+    })
+  }, [initialized])
+
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
+      <div className={styles.header}>
         <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+          className={styles.playStopButton}
+          src={!playing ? '/play.svg' : '/stop.svg'}
+          alt="Play/Stop Button"
+          width={40}
+          height={40}
+          onClick={playStop}
         />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+      </div>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+      <div className={styles.content}>
+        <div className={styles.control}>
+          <p className={styles.controlLabel}>PITCH</p>
+          <Voice pitch={pitch1} setPitch={setPitch1} scale={scaleOptions[scale] as ScaleName} label={pitch1NoteName} />
+
+          <div className={styles.voiceGlobalControls}>
+            <div className={styles.voiceGlobalControl}>
+              <LinearKnob
+                min={0}
+                max={11}
+                step={1}
+                value={transpose}
+                onChange={setTranspose}
+                strokeColor={secondaryColor}
+              />
+              <p>
+                root:
+                <br />
+                {musicNotes[transpose]}
+              </p>
+            </div>
+            <div className={styles.voiceGlobalControl}>
+              <LinearKnob
+                min={0}
+                max={scaleOptions.length - 1}
+                step={1}
+                value={scale}
+                onChange={setScale}
+                strokeColor={secondaryColor}
+              />
+              <p>
+                scale:
+                <br />
+                {scaleOptions[scale]}
+              </p>
+            </div>
+            <svg className={styles.voiceGlobalControlDivider} width="60" height="40">
+              <line x1="0" y1="20" x2="60" y2="20" stroke={secondaryColor} strokeWidth="2" />
+              <line x1="59" y1="0" x2="59" y2="40" stroke={secondaryColor} strokeWidth="2" />
+            </svg>
+          </div>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className={styles.control}>
+          <p className={styles.controlLabel}>WAVE</p>
+          <LinearKnob value={wave} onChange={updateWave} min={0} max={MAX_DETUNE} strokeColor={secondaryColor} />
+        </div>
+      </div>
     </div>
-  );
+  )
 }
