@@ -17,7 +17,7 @@ const musicNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 export default function LAMBVoice() {
   const [initialized, setInitialized] = useState<boolean>(false)
   const [playing, setPlaying] = useState<boolean>(false)
-  const [pitch1, setPitch1] = useState<number>(49)
+  const [pitch1, setPitch1] = useState<number>(48)
   const [pitch1Freq, setPitch1Freq] = useState<number>(() => midiNoteNumberToFrequency(pitch1))
   const voice1Ref = useRef<Tone.OmniOscillator<Tone.Oscillator> | null>(null)
 
@@ -104,6 +104,7 @@ export default function LAMBVoice() {
             }
           />
 
+          {/* voice global controls */}
           <div className={styles.voiceGlobalControls}>
             <div className={styles.voiceGlobalControl}>
               <LinearKnob

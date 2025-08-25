@@ -4,7 +4,9 @@ import { secondaryColor } from '@/app/globals'
 import { midiNoteNumberToFrequency, frequencyToMidiNoteNumber } from '@/util/midi'
 import styles from './index.module.css'
 
-// MIDI note 24 - 84 (C1 - C6, 32.7Hz - 8372Hz)
+// MIDI note 24 - 84 (C1 - C6, 32.7Hz - 1046.50Hz)
+const C1 = 32.7
+const C6 = 1046.5
 export const minPitch = 24
 export const maxPitch = 84
 export const MAX_DETUNE = 100
@@ -106,8 +108,8 @@ export default function Voice({ pitch, setPitch, pitchFreq, setPitchFreq, scale,
       <div className={styles.voice}>
         {scale === 'free' ? (
           <LinearKnob
-            min={32.7}
-            max={8372}
+            min={C1}
+            max={C6}
             value={pitchFreq}
             onChange={setPitchFreq}
             strokeColor={secondaryColor}
