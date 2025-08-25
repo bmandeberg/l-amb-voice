@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import LinearKnob from '@/components/LinearKnob'
 import { secondaryColor } from '@/app/globals'
+import { midiNoteNumberToFrequency, frequencyToMidiNoteNumber } from '@/util/midi'
 import styles from './index.module.css'
 
 // MIDI note 24 - 84 (C1 - C6, 32.7Hz - 8372Hz)
@@ -9,6 +10,7 @@ export const maxPitch = 84
 export const MAX_DETUNE = 100
 
 export const scales = {
+  free: null,
   chromatic: [1],
   ionian: [2, 2, 1, 2, 2, 2, 1],
   dorian: [2, 1, 2, 2, 2, 1, 2],
@@ -20,24 +22,29 @@ export const scales = {
   pentatonic: [2, 2, 3, 2, 3],
   diminished: [2, 1, 2, 1, 2, 1, 2, 1],
   insen: [1, 2, 2, 1, 2, 2],
-  whole: [2],
 }
 export type ScaleName = keyof typeof scales
 
 interface VoiceProps {
   pitch: number
   setPitch: (value: number) => void
+  pitchFreq: number
+  setPitchFreq: (value: number) => void
   scale: ScaleName
   label?: string
 }
 
-export default function Voice({ pitch, setPitch, scale, label }: VoiceProps) {
+export default function Voice({ pitch, setPitch, pitchFreq, setPitchFreq, scale, label }: VoiceProps) {
   const [localPitch, setLocalPitch] = useState(pitch)
   const pitchRef = useRef(pitch)
+  const pitchFreqRef = useRef(pitchFreq)
 
   useEffect(() => {
     pitchRef.current = pitch
   }, [pitch])
+  useEffect(() => {
+    pitchFreqRef.current = pitchFreq
+  }, [pitchFreq])
 
   const availablePitches = useMemo<number[]>(() => {
     let currentPitch = minPitch
@@ -68,8 +75,18 @@ export default function Voice({ pitch, setPitch, scale, label }: VoiceProps) {
     setLocalPitch(localPitch)
   }, [])
 
+  const lastScale = useRef(scale)
   // update pitch to be diatonic when scale or transpose changes
   useEffect(() => {
+    if (scale === 'free' && lastScale.current !== 'free') {
+      setPitchFreq(midiNoteNumberToFrequency(pitchRef.current))
+    } else if (scale !== 'free' && lastScale.current === 'free') {
+      pitchRef.current = frequencyToMidiNoteNumber(pitchFreqRef.current)
+    }
+    lastScale.current = scale
+
+    if (scale === 'free') return
+
     // find closest pitch in availablePitches
     let closestIndex = 0
     for (let i = 0; i < availablePitches.length; i++) {
@@ -82,25 +99,38 @@ export default function Voice({ pitch, setPitch, scale, label }: VoiceProps) {
 
     updateLocalPitch(closestIndex + 1)
     updatePitch(closestIndex + 1)
-  }, [availablePitches, updatePitch, updateLocalPitch])
+  }, [scale, availablePitches, updatePitch, updateLocalPitch, setPitchFreq])
 
   const content = useMemo(
     () => (
       <div className={styles.voice}>
-        <LinearKnob
-          min={1}
-          max={availablePitches.length}
-          step={1}
-          value={localPitch}
-          onChange={updateLocalPitch}
-          setModdedValue={updatePitch}
-          strokeColor={secondaryColor}
-          label={label}
-          disableReset
-        />
+        {scale === 'free' ? (
+          <LinearKnob
+            min={32.7}
+            max={8372}
+            value={pitchFreq}
+            onChange={setPitchFreq}
+            strokeColor={secondaryColor}
+            label={label}
+            taper="log"
+            disableReset
+          />
+        ) : (
+          <LinearKnob
+            min={1}
+            max={availablePitches.length}
+            step={1}
+            value={localPitch}
+            onChange={updateLocalPitch}
+            setModdedValue={updatePitch}
+            strokeColor={secondaryColor}
+            label={label}
+            disableReset
+          />
+        )}
       </div>
     ),
-    [availablePitches, localPitch, updatePitch, updateLocalPitch, label]
+    [scale, availablePitches, localPitch, updatePitch, updateLocalPitch, label, pitchFreq, setPitchFreq]
   )
 
   return content

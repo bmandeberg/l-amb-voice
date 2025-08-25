@@ -5,7 +5,7 @@ import Image from 'next/image'
 import * as Tone from 'tone'
 import Voice, { scales, ScaleName, minPitch, maxPitch, MAX_DETUNE } from '@/components/Voice'
 import LinearKnob from '@/components/LinearKnob'
-import { midiNoteNumberToNoteName } from '@/util/midi'
+import { midiNoteNumberToNoteName, midiNoteNumberToFrequency, transposeFreq } from '@/util/midi'
 import { constrain } from '@/util/math'
 import getNativeContext from '@/util/getNativeContext'
 import { secondaryColor } from './globals'
@@ -18,6 +18,7 @@ export default function LAMBVoice() {
   const [initialized, setInitialized] = useState<boolean>(false)
   const [playing, setPlaying] = useState<boolean>(false)
   const [pitch1, setPitch1] = useState<number>(49)
+  const [pitch1Freq, setPitch1Freq] = useState<number>(() => midiNoteNumberToFrequency(pitch1))
   const voice1Ref = useRef<Tone.OmniOscillator<Tone.Oscillator> | null>(null)
 
   const [wave, setWave] = useState<number>(0)
@@ -29,9 +30,12 @@ export default function LAMBVoice() {
   const [transpose, setTranspose] = useState<number>(0)
   const [scale, setScale] = useState<number>(0)
 
-  const pitch1NoteName = useMemo(
-    () => midiNoteNumberToNoteName(constrain(pitch1 + transpose, minPitch, maxPitch)),
-    [pitch1, transpose]
+  const pitch1NoteName = useMemo<string | number>(
+    () =>
+      scaleOptions[scale] === 'free'
+        ? transposeFreq(pitch1Freq, transpose)
+        : midiNoteNumberToNoteName(constrain(pitch1 + transpose, minPitch, maxPitch)),
+    [pitch1, transpose, pitch1Freq, scale]
   )
 
   useEffect(() => {
@@ -87,14 +91,25 @@ export default function LAMBVoice() {
       <div className={styles.content}>
         <div className={styles.control}>
           <p className={styles.controlLabel}>PITCH</p>
-          <Voice pitch={pitch1} setPitch={setPitch1} scale={scaleOptions[scale] as ScaleName} label={pitch1NoteName} />
+          <Voice
+            pitch={pitch1}
+            setPitch={setPitch1}
+            pitchFreq={pitch1Freq}
+            setPitchFreq={setPitch1Freq}
+            scale={scaleOptions[scale] as ScaleName}
+            label={
+              scaleOptions[scale] === 'free'
+                ? (pitch1NoteName as number).toFixed(2) + ' Hz'
+                : (pitch1NoteName as string)
+            }
+          />
 
           <div className={styles.voiceGlobalControls}>
             <div className={styles.voiceGlobalControl}>
               <LinearKnob
                 min={0}
-                max={11}
-                step={1}
+                max={scaleOptions[scale] === 'free' ? 12 : 11}
+                step={scaleOptions[scale] === 'free' ? undefined : 1}
                 value={transpose}
                 onChange={setTranspose}
                 strokeColor={secondaryColor}
