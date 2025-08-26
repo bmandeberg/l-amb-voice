@@ -21,10 +21,19 @@ export default function LAMBVoice() {
   const [pitch1Freq, setPitch1Freq] = useState<number>(() => midiNoteNumberToFrequency(pitch1))
   const voice1Ref = useRef<Tone.OmniOscillator<Tone.Oscillator> | null>(null)
 
-  const [wave, setWave] = useState<number>(0)
+  const [subLevel, setSubLevel] = useState<number>(0)
+  const voice1SubRef = useRef<Tone.OmniOscillator<Tone.Oscillator> | null>(null)
+  const voice1SubGainRef = useRef<Tone.Gain | null>(null)
+  const updateSubLevel = useCallback((value: number) => {
+    setSubLevel(value)
+    voice1SubGainRef.current?.set({ gain: value })
+  }, [])
+
+  const [wave, setWave] = useState<number>(MAX_DETUNE / 2)
   const updateWave = useCallback((value: number) => {
     setWave(value)
     voice1Ref.current?.set({ spread: value })
+    voice1SubRef.current?.set({ spread: value })
   }, [])
 
   const [transpose, setTranspose] = useState<number>(0)
@@ -38,9 +47,15 @@ export default function LAMBVoice() {
     [pitch1, transpose, pitch1Freq, scale]
   )
 
+  // update voice pitches
   useEffect(() => {
     if (voice1Ref.current) voice1Ref.current.frequency.value = pitch1NoteName
-  }, [pitch1NoteName])
+    if (voice1SubRef.current)
+      voice1SubRef.current.frequency.value =
+        typeof pitch1NoteName === 'number'
+          ? pitch1NoteName / 2
+          : midiNoteNumberToNoteName(constrain(pitch1 + transpose - 12, minPitch - 12, maxPitch))
+  }, [pitch1NoteName, pitch1, transpose])
 
   // init audio
   useEffect(() => {
@@ -50,10 +65,23 @@ export default function LAMBVoice() {
       volume: -8,
       frequency: pitch1NoteName,
       type: 'fatsawtooth',
-      spread: 0,
     })
       .toDestination()
       .start()
+    voice1Ref.current.set({ spread: wave })
+
+    voice1SubGainRef.current = new Tone.Gain({
+      gain: subLevel,
+    }).toDestination()
+
+    voice1SubRef.current = new Tone.OmniOscillator({
+      volume: -8,
+      frequency: (pitch1NoteName as number) / 2,
+      type: 'fatsawtooth',
+    })
+      .connect(voice1SubGainRef.current)
+      .start()
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialized])
 
@@ -74,6 +102,20 @@ export default function LAMBVoice() {
       return !playing
     })
   }, [initialized])
+
+  // play/stop on spacebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault() // prevent scrolling
+        playStop()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [playStop])
 
   return (
     <div className={styles.page}>
@@ -145,6 +187,10 @@ export default function LAMBVoice() {
         <div className={styles.control}>
           <p className={styles.controlLabel}>WAVE</p>
           <LinearKnob value={wave} onChange={updateWave} min={0} max={MAX_DETUNE} strokeColor={secondaryColor} />
+        </div>
+        <div className={styles.control}>
+          <p className={styles.controlLabel}>SUB</p>
+          <LinearKnob value={subLevel} onChange={updateSubLevel} min={0} max={1} strokeColor={secondaryColor} />
         </div>
       </div>
     </div>
