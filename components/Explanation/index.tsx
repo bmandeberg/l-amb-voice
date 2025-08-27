@@ -8,7 +8,7 @@ export default function Explanation() {
       <h3>ABOUT</h3>
 
       <span>
-        This represents one &quot;voice&quot; (audio oscillator), which includes the <b>PITCH</b>, <b>WAVE</b>, and{' '}
+        This demo represents one &quot;voice&quot; (audio oscillator), which includes the <b>PITCH</b>, <b>WAVE</b>, and{' '}
         <b>SUB</b> controls. There will be 4 of these voices on the synthesizer, each coming out of one channel of a
         TAD5142. There are also two global controls that will affect all of the 4 voices - <b>root</b> and <b>scale</b>.
       </span>
@@ -24,9 +24,9 @@ export default function Explanation() {
 
       <span>
         The <b>root</b> control &quot;transposes&quot; the pitch of all voices, which means it shifts the pitch by up to
-        +/- 11 <a href="https://en.wikipedia.org/wiki/Semitone">musical semitones</a> (half-steps). When <b>scale</b> is
-        set to free, the root is also adjusted freely, but when a specific <b>scale</b> is selected, the root will snap
-        to semitones.
+        11 <a href="https://en.wikipedia.org/wiki/Semitone">musical semitones</a> (half-steps). When <b>scale</b> is set
+        to free, the root is also adjusted freely, but when a specific <b>scale</b> is selected, the root will snap to
+        semitones.
       </span>
 
       <span>
@@ -53,8 +53,8 @@ export default function Explanation() {
         When <b>scale</b> is set to free, the <b>PITCH</b> control can sweep freely between 32.7 Hz (C1) and 1046.5 Hz
         (C6). In this case, be sure to use a logarithmic range for your <b>PITCH</b> knob, it&apos;s pretty easy to
         project your knob position logarithmically, let me know if you need any help. In this case, the <b>root</b>{' '}
-        freely transposes the pitch by up to +/- 11 semitones. Here is a function to add this transposition to the
-        frequency that is selected by the <b>PITCH</b> control:
+        freely transposes the pitch by up to 11 semitones. Here is a function to add this transposition to the frequency
+        that is selected by the <b>PITCH</b> control:
       </span>
 
       <div className={styles.codeBlock}>

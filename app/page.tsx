@@ -44,7 +44,7 @@ export default function LAMBVoice() {
     () =>
       scaleOptions[scale] === 'free'
         ? transposeFreq(pitch1Freq, transpose)
-        : midiNoteNumberToNoteName(constrain(pitch1 + transpose, minPitch, maxPitch)),
+        : midiNoteNumberToNoteName(constrain(pitch1 + Math.round(transpose), minPitch, maxPitch)),
     [pitch1, transpose, pitch1Freq, scale]
   )
 
@@ -149,7 +149,7 @@ export default function LAMBVoice() {
             <div className={styles.voiceGlobalControl}>
               <LinearKnob
                 min={0}
-                max={scaleOptions[scale] === 'free' ? 12 : 11}
+                max={11}
                 step={scaleOptions[scale] === 'free' ? undefined : 1}
                 value={transpose}
                 onChange={setTranspose}
@@ -158,7 +158,7 @@ export default function LAMBVoice() {
               <p>
                 root:
                 <br />
-                {musicNotes[transpose]}
+                {scaleOptions[scale] === 'free' ? transpose.toFixed(2) : musicNotes[Math.round(transpose)]}
               </p>
             </div>
             <div className={styles.voiceGlobalControl}>
