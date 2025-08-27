@@ -68,24 +68,3 @@
   top: 50%;
   transform: translateY(-50%);
 }
-
-.explanation {
-  color: #000;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  overflow-y: auto;
-  max-height: 100vh;
-}
-
-.explanation b {
-  color: var(--secondary-color);
-}
-
-.explanation a {
-  color: blue;
-}
-
-.codeBlock {
-  /* border: 1px solid #ccc; */
-}
