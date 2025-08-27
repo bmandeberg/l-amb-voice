@@ -5,9 +5,8 @@
   height: 100vh;
   padding: 40px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 20px;
+  padding-left: 100px;
   color: var(--secondary-color);
   position: relative;
 }
@@ -25,8 +24,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 26px;
+  margin-right: 200px;
 }
 
 .control {
@@ -68,4 +67,25 @@
   left: -74px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.explanation {
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.explanation b {
+  color: var(--secondary-color);
+}
+
+.explanation a {
+  color: blue;
+}
+
+.codeBlock {
+  /* border: 1px solid #ccc; */
 }

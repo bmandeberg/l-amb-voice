@@ -18,12 +18,6 @@ export function transposeFreq(freq: number, semitones: number): number {
 }
 
 export function octaveDown(freq: number | string): number {
-  // if (typeof freq === 'string') {
-  //   const noteNumber = frequencyToMidiNoteNumber(parseFloat(freq))
-  //   return midiNoteNumberToFrequency(noteNumber - 12)
-  // } else {
-  //   return freq / 2
-  // }
   return typeof freq === 'string'
     ? midiNoteNumberToFrequency(frequencyToMidiNoteNumber(parseFloat(freq)) - 12)
     : freq / 2
