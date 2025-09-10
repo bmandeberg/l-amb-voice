@@ -24,9 +24,12 @@ export default function Explanation() {
 
       <span>
         The <b>root</b> control &quot;transposes&quot; the pitch of all voices, which means it shifts the pitch by up to
-        11 <a href="https://en.wikipedia.org/wiki/Semitone">musical semitones</a> (half-steps). When <b>scale</b> is set
-        to free, the root is also adjusted freely, but when a specific <b>scale</b> is selected, the root will snap to
-        semitones.
+        11{' '}
+        <a target="_blank" href="https://en.wikipedia.org/wiki/Semitone">
+          musical semitones
+        </a>{' '}
+        (half-steps). When <b>scale</b> is set to free, the root is also adjusted freely, but when a specific{' '}
+        <b>scale</b> is selected, the root will snap to semitones.
       </span>
 
       <span>
@@ -194,12 +197,17 @@ function midiNoteNumberToFrequency(noteNumber) {
 
       <h3>GITHUB</h3>
 
-      <a href="https://github.com/bmandeberg/l-amb-voice">https://github.com/bmandeberg/l-amb-voice</a>
+      <a target="_blank" href="https://github.com/bmandeberg/l-amb-voice">
+        https://github.com/bmandeberg/l-amb-voice
+      </a>
 
       <span>
         This example website is a NextJS project, so the main code to check would be at{' '}
-        <a href="https://github.com/bmandeberg/l-amb-voice/blob/main/app/page.tsx">/app/page.tsx</a> and{' '}
-        <a href="https://github.com/bmandeberg/l-amb-voice/blob/main/components/Voice/index.tsx">
+        <a target="_blank" href="https://github.com/bmandeberg/l-amb-voice/blob/main/app/page.tsx">
+          /app/page.tsx
+        </a>{' '}
+        and{' '}
+        <a target="_blank" href="https://github.com/bmandeberg/l-amb-voice/blob/main/components/Voice/index.tsx">
           /components/Voice/index.tsx
         </a>
       </span>
